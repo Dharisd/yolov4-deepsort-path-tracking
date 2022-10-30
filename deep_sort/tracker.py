@@ -45,6 +45,7 @@ class Tracker:
 
         self.kf = kalman_filter.KalmanFilter()
         self.tracks = []
+        self.path = []
         self._next_id = 1
 
     def predict(self):
@@ -76,6 +77,25 @@ class Tracker:
             self.tracks[track_idx].mark_missed()
         for detection_idx in unmatched_detections:
             self._initiate_track(detections[detection_idx])
+
+        for t in self.tracks:
+          #print(t.features)
+          if t.is_deleted() and len(t.path) > 1 :
+            #find distance between two points
+            #print(t.path[0][0])
+            start_x,start_y = t.path[0][0],t.path[0][1]
+            end_x,end_y = t.path[-1][0],t.path[-1][1]
+
+            dist = math.hypot(end_x - start_x, end_y - start_y)
+
+            speed = dist/len(t.path)
+
+
+            #print(dist)
+
+
+            print(f"{t.get_class()}_{t.track_id}  {len(t.path)} speed: {speed}")
+        
         self.tracks = [t for t in self.tracks if not t.is_deleted()]
 
         # Update distance metric.
